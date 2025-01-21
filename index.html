@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llamada al ruido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #6200ea;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        #trackInfo {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Llamada al ruido</h1>
+    <p>Esta web alberga grabaciones de improvisación libre. Estas grabaciones son reproducidas azarosamente así como fueron grabadas.</p>
+    <button id="playButton">Reproducir grabación de algún momento</button>
+    <audio id="audioPlayer" hidden></audio>
+    <div id="trackInfo"></div>
+
+    <script>
+        const dataUrl = 'llamada_al_ruido.csv';
+
+        const playButton = document.getElementById('playButton');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackInfo = document.getElementById('trackInfo');
+
+        let trackData = [];
+
+        function loadCSV(url) {
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error al cargar el CSV: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(csvText => {
+                    console.log('CSV cargado:', csvText);
+                    const rows = csvText.split('\n').slice(1); // Ignorar la cabecera
+                    return rows.map(row => {
+                        const [track, fecha, lugar, interpretes] = row.split(',');
+                        return { track: track.trim(), fecha: fecha.trim(), lugar: lugar.trim(), interpretes: interpretes.trim() };
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar el CSV:', error);
+                });
+        }
+
+        loadCSV(dataUrl).then(data => {
+            trackData = data || [];
+            console.log('Datos cargados:', trackData);
+        });
+
+        function playRandomAudio() {
+            if (trackData.length === 0) {
+                alert('Los datos aún no se han cargado. Intenta de nuevo.');
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * trackData.length);
+            const randomTrack = trackData[randomIndex];
+
+            if (!randomTrack) {
+                console.error('Track no encontrado.');
+                return;
+            }
+
+            audioPlayer.src = `audios/${randomTrack.track}`;
+            console.log(`Reproduciendo: ${randomTrack.track}`);
+
+            audioPlayer.addEventListener('loadedmetadata', () => {
+                const audioDuration = audioPlayer.duration;
+                const randomStart = Math.random() * audioDuration;
+                const randomDuration = Math.min(
+                    60 + Math.random() * 180,
+                    audioDuration - randomStart
+                );
+
+                audioPlayer.currentTime = randomStart;
+                audioPlayer.play();
+                console.log(`Inicia en: ${randomStart}s, Duración: ${randomDuration}s`);
+
+                setTimeout(() => {
+                    audioPlayer.pause();
+                }, randomDuration * 1000);
+
+                trackInfo.innerHTML = `
+                    <p><strong>Fecha:</strong> ${randomTrack.fecha}</p>
+                    <p><strong>Lugar:</strong> ${randomTrack.lugar}</p>
+                    <p><strong>Intérpretes:</strong> ${randomTrack.interpretes}</p>
+                `;
+            }, { once: true });
+        }
+
+        playButton.addEventListener('click', playRandomAudio);
+    </script>
+</body>
+</html>
