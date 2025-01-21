@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página de Audio Aleatorio</title>
+    <title>Audio Aleatorio con Botón</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,12 +15,25 @@
         h1 {
             margin-bottom: 20px;
         }
+        button {
+            background-color: #6200ea;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
     </style>
 </head>
 <body>
-    <h1>Reproduciendo un track al azar</h1>
-    <p>Disfruta el sonido.</p>
-    <audio id="audioPlayer" controls autoplay></audio>
+    <h1>Llamada al ruido</h1>
+    <p>Esta web alberga grabaciones de improvisacion libre. Estas grabaciones son reproducidas azarosamente asi como fueron grabadas.</p>
+    <button id="playButton">reproducir grabacion de algun momento</button>
+    <audio id="audioPlayer" hidden></audio>
 
     <script>
         // Lista de archivos de audio
@@ -35,13 +48,47 @@
             'audios/8.mp3'
         ];
 
-        // Seleccionar un track al azar
-        const randomIndex = Math.floor(Math.random() * tracks.length);
-        const randomTrack = tracks[randomIndex];
-
-        // Reproducir el track
+        // Elementos HTML
+        const playButton = document.getElementById('playButton');
         const audioPlayer = document.getElementById('audioPlayer');
-        audioPlayer.src = randomTrack;
+
+        // Función para reproducir un track aleatorio
+        function playRandomAudio() {
+            // Seleccionar un track al azar
+            const randomIndex = Math.floor(Math.random() * tracks.length);
+            const randomTrack = tracks[randomIndex];
+
+            // Asignar el track al reproductor
+            audioPlayer.src = randomTrack;
+
+            // Esperar a que los metadatos estén disponibles
+            audioPlayer.addEventListener('loadedmetadata', () => {
+                const audioDuration = audioPlayer.duration;
+
+                // Elegir un punto de inicio aleatorio
+                const randomStart = Math.random() * audioDuration;
+
+                // Elegir una duración aleatoria (entre 1 y 4 minutos)
+                const randomDuration = Math.min(
+                    60 + Math.random() * 180, // Entre 60 y 240 segundos
+                    audioDuration - randomStart
+                );
+
+                // Configurar el punto de inicio
+                audioPlayer.currentTime = randomStart;
+
+                // Reproducir el audio
+                audioPlayer.play();
+
+                // Detener el audio después de la duración aleatoria
+                setTimeout(() => {
+                    audioPlayer.pause();
+                }, randomDuration * 1000);
+            }, { once: true }); // Evitar múltiples ejecuciones del evento
+        }
+
+        // Asignar la función al botón
+        playButton.addEventListener('click', playRandomAudio);
     </script>
 </body>
 </html>
