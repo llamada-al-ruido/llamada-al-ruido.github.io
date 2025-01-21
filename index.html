@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Llamada al ruido</title>
+    <title>Página de Audio Aleatorio</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,125 +15,33 @@
         h1 {
             margin-bottom: 20px;
         }
-        button {
-            background-color: #6200ea;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #3700b3;
-        }
-        #trackInfo {
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
-    <h1>Llamada al ruido</h1>
-    <p>Esta web alberga grabaciones de improvisación libre. Estas grabaciones son reproducidas azarosamente así como fueron grabadas.</p>
-    <button id="playButton">Reproducir grabación de algún momento</button>
-    <audio id="audioPlayer" hidden></audio>
-    <div id="trackInfo"></div>
+    <h1>Reproduciendo un track al azar</h1>
+    <p>Disfruta el sonido.</p>
+    <audio id="audioPlayer" controls autoplay></audio>
 
     <script>
-        // Ruta del archivo CSV con los datos
-        const dataUrl = 'llamada_al_ruido.csv';
-
-        // Lista de tracks (estos nombres deben coincidir con el CSV)
+        // Lista de archivos de audio
         const tracks = [
-            '1.mp3',
-            '2.mp3',
-            '3.mp3',
-            '4.mp3',
-            '5.mp3',
-            '6.mp3',
-            '7.mp3',
-            '8.mp3'
+            'audios/1.mp3',
+            'audios/2.mp3',
+            'audios/3.mp3',
+            'audios/4.mp3',
+            'audios/5.mp3',
+            'audios/6.mp3',
+            'audios/7.mp3',
+            'audios/8.mp3'
         ];
 
-        // Elementos HTML
-        const playButton = document.getElementById('playButton');
+        // Seleccionar un track al azar
+        const randomIndex = Math.floor(Math.random() * tracks.length);
+        const randomTrack = tracks[randomIndex];
+
+        // Reproducir el track
         const audioPlayer = document.getElementById('audioPlayer');
-        const trackInfo = document.getElementById('trackInfo');
-
-        let trackData = []; // Aquí se almacenarán los datos del CSV
-
-        // Función para cargar y procesar el CSV
-        function loadCSV(url) {
-            return fetch(url)
-                .then(response => response.text())
-                .then(csvText => {
-                    const rows = csvText.split('\n').slice(1); // Ignorar la cabecera
-                    return rows.map(row => {
-                        const [track, fecha, lugar, interpretes] = row.split(',');
-                        return { track: track.trim(), fecha: fecha.trim(), lugar: lugar.trim(), interpretes: interpretes.trim() };
-                    });
-                })
-                .catch(error => {
-                    console.error('Error al cargar el CSV:', error);
-                });
-        }
-
-        // Cargar los datos del CSV al iniciar la página
-        loadCSV(dataUrl).then(data => {
-            trackData = data;
-        });
-
-        // Función para reproducir un track aleatorio
-        function playRandomAudio() {
-            // Seleccionar un track al azar
-            const randomIndex = Math.floor(Math.random() * tracks.length);
-            const randomTrack = tracks[randomIndex];
-
-            // Buscar los datos del track seleccionado
-            const trackInfoData = trackData.find(item => item.track === randomTrack);
-
-            // Asignar el track al reproductor
-            audioPlayer.src = `audios/${randomTrack}`;
-
-            // Esperar a que los metadatos estén disponibles
-            audioPlayer.addEventListener('loadedmetadata', () => {
-                const audioDuration = audioPlayer.duration;
-
-                // Elegir un punto de inicio aleatorio
-                const randomStart = Math.random() * audioDuration;
-
-                // Elegir una duración aleatoria (entre 1 y 4 minutos)
-                const randomDuration = Math.min(
-                    60 + Math.random() * 180, // Entre 60 y 240 segundos
-                    audioDuration - randomStart
-                );
-
-                // Configurar el punto de inicio
-                audioPlayer.currentTime = randomStart;
-
-                // Reproducir el audio
-                audioPlayer.play();
-
-                // Detener el audio después de la duración aleatoria
-                setTimeout(() => {
-                    audioPlayer.pause();
-                }, randomDuration * 1000);
-
-                // Mostrar los datos del track en la web
-                if (trackInfoData) {
-                    trackInfo.innerHTML = `
-                        <p><strong>Fecha:</strong> ${trackInfoData.fecha}</p>
-                        <p><strong>Lugar:</strong> ${trackInfoData.lugar}</p>
-                        <p><strong>Intérpretes:</strong> ${trackInfoData.interpretes}</p>
-                    `;
-                } else {
-                    trackInfo.innerHTML = '<p>Datos no disponibles para esta grabación.</p>';
-                }
-            }, { once: true }); // Evitar múltiples ejecuciones del evento
-        }
-
-        // Asignar la función al botón
-        playButton.addEventListener('click', playRandomAudio);
+        audioPlayer.src = randomTrack;
     </script>
 </body>
 </html>
