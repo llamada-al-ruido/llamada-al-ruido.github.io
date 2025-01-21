@@ -40,24 +40,33 @@
     <div id="trackInfo"></div>
 
     <script>
+        // Ruta del archivo CSV con los datos
         const dataUrl = 'llamada_al_ruido.csv';
 
+        // Lista de tracks (estos nombres deben coincidir con el CSV)
+        const tracks = [
+            '1.mp3',
+            '2.mp3',
+            '3.mp3',
+            '4.mp3',
+            '5.mp3',
+            '6.mp3',
+            '7.mp3',
+            '8.mp3'
+        ];
+
+        // Elementos HTML
         const playButton = document.getElementById('playButton');
         const audioPlayer = document.getElementById('audioPlayer');
         const trackInfo = document.getElementById('trackInfo');
 
-        let trackData = [];
+        let trackData = []; // Aquí se almacenarán los datos del CSV
 
+        // Función para cargar y procesar el CSV
         function loadCSV(url) {
             return fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error al cargar el CSV: ${response.status}`);
-                    }
-                    return response.text();
-                })
+                .then(response => response.text())
                 .then(csvText => {
-                    console.log('CSV cargado:', csvText);
                     const rows = csvText.split('\n').slice(1); // Ignorar la cabecera
                     return rows.map(row => {
                         const [track, fecha, lugar, interpretes] = row.split(',');
@@ -69,52 +78,61 @@
                 });
         }
 
+        // Cargar los datos del CSV al iniciar la página
         loadCSV(dataUrl).then(data => {
-            trackData = data || [];
-            console.log('Datos cargados:', trackData);
+            trackData = data;
         });
 
+        // Función para reproducir un track aleatorio
         function playRandomAudio() {
-            if (trackData.length === 0) {
-                alert('Los datos aún no se han cargado. Intenta de nuevo.');
-                return;
-            }
+            // Seleccionar un track al azar
+            const randomIndex = Math.floor(Math.random() * tracks.length);
+            const randomTrack = tracks[randomIndex];
 
-            const randomIndex = Math.floor(Math.random() * trackData.length);
-            const randomTrack = trackData[randomIndex];
+            // Buscar los datos del track seleccionado
+            const trackInfoData = trackData.find(item => item.track === randomTrack);
 
-            if (!randomTrack) {
-                console.error('Track no encontrado.');
-                return;
-            }
+            // Asignar el track al reproductor
+            audioPlayer.src = `audios/${randomTrack}`;
 
-            audioPlayer.src = `audios/${randomTrack.track}`;
-            console.log(`Reproduciendo: ${randomTrack.track}`);
-
+            // Esperar a que los metadatos estén disponibles
             audioPlayer.addEventListener('loadedmetadata', () => {
                 const audioDuration = audioPlayer.duration;
+
+                // Elegir un punto de inicio aleatorio
                 const randomStart = Math.random() * audioDuration;
+
+                // Elegir una duración aleatoria (entre 1 y 4 minutos)
                 const randomDuration = Math.min(
-                    60 + Math.random() * 180,
+                    60 + Math.random() * 180, // Entre 60 y 240 segundos
                     audioDuration - randomStart
                 );
 
+                // Configurar el punto de inicio
                 audioPlayer.currentTime = randomStart;
-                audioPlayer.play();
-                console.log(`Inicia en: ${randomStart}s, Duración: ${randomDuration}s`);
 
+                // Reproducir el audio
+                audioPlayer.play();
+
+                // Detener el audio después de la duración aleatoria
                 setTimeout(() => {
                     audioPlayer.pause();
                 }, randomDuration * 1000);
 
-                trackInfo.innerHTML = `
-                    <p><strong>Fecha:</strong> ${randomTrack.fecha}</p>
-                    <p><strong>Lugar:</strong> ${randomTrack.lugar}</p>
-                    <p><strong>Intérpretes:</strong> ${randomTrack.interpretes}</p>
-                `;
-            }, { once: true });
+                // Mostrar los datos del track en la web
+                if (trackInfoData) {
+                    trackInfo.innerHTML = `
+                        <p><strong>Fecha:</strong> ${trackInfoData.fecha}</p>
+                        <p><strong>Lugar:</strong> ${trackInfoData.lugar}</p>
+                        <p><strong>Intérpretes:</strong> ${trackInfoData.interpretes}</p>
+                    `;
+                } else {
+                    trackInfo.innerHTML = '<p>Datos no disponibles para esta grabación.</p>';
+                }
+            }, { once: true }); // Evitar múltiples ejecuciones del evento
         }
 
+        // Asignar la función al botón
         playButton.addEventListener('click', playRandomAudio);
     </script>
 </body>
