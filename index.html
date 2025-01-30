@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Aleatorio con Botón</title>
+    <title>Llamada al ruido</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,6 +15,9 @@
         h1 {
             margin-bottom: 20px;
         }
+        .button-container {
+            margin-bottom: 20px;
+        }
         button {
             background-color: #6200ea;
             color: #fff;
@@ -23,6 +26,7 @@
             font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
+            margin: 5px;
         }
         button:hover {
             background-color: #3700b3;
@@ -31,69 +35,48 @@
 </head>
 <body>
     <h1>Llamada al ruido</h1>
-    <p>Esta web alberga grabaciones de improvisacion libre. Estas grabaciones son reproducidas azarosamente asi como fueron grabadas.</p>
-    <button id="playButton">reproducir grabacion de algun momento</button>
+    <p>Esta web tiene grabaciones de improvisación libre realizadas en un juntada semanal por un grupo flexible.</p>
+    <p>Los siguientes botones reprodocuen un fragmento al azar de cualquiera de las fechas con distintas duraciones segun las tres opciones.</p>
+  
+
+    <div class="button-container">
+        <button onclick="playRandomAudio(1)">Caminando</button>
+        <button onclick="playRandomAudio(3)">En el colectivo</button>
+        <button onclick="playRandomAudio(6)">En el colectivo</button>
+    </div>
+    
+    <p>Participaron en algun momento:</p>
+    <p>Flor: electroacústica, Marian: volca, Agu: violín y sinte, Raulo: guitarra, Val: guitarra, Tachi: electrónica, Vero: clarinete, Guada: percusión</p>
+
     <audio id="audioPlayer" hidden></audio>
 
     <script>
-        // Lista de archivos de audio
         const tracks = [
-            'audios/1.mp3',
-            'audios/2.mp3',
-            'audios/3.mp3',
-            'audios/4.mp3',
-            'audios/5.mp3',
-            'audios/6.mp3',
-            'audios/7.mp3',
-            'audios/8.mp3',
-            'audios/9.flac',
-            'audios/10.flac',
-            'audios/11.flac',
-            'audios/12.flac',
-            'audios/13.flac',
+            'audios/1.mp3', 'audios/2.mp3', 'audios/3.mp3', 'audios/4.mp3',
+            'audios/5.mp3', 'audios/6.mp3', 'audios/7.mp3', 'audios/8.mp3',
+            'audios/9.flac', 'audios/10.flac', 'audios/11.flac', 'audios/12.flac', 'audios/13.flac'
         ];
 
-        // Elementos HTML
-        const playButton = document.getElementById('playButton');
         const audioPlayer = document.getElementById('audioPlayer');
 
-        // Función para reproducir un track aleatorio
-        function playRandomAudio() {
-            // Seleccionar un track al azar
+        function playRandomAudio(multiplier) {
             const randomIndex = Math.floor(Math.random() * tracks.length);
             const randomTrack = tracks[randomIndex];
-
-            // Asignar el track al reproductor
             audioPlayer.src = randomTrack;
-
-            // Esperar a que los metadatos estén disponibles
+            
             audioPlayer.addEventListener('loadedmetadata', () => {
                 const audioDuration = audioPlayer.duration;
-
-                // Elegir un punto de inicio aleatorio
                 const randomStart = Math.random() * audioDuration;
-
-                // Elegir una duración aleatoria (entre 1 y 4 minutos)
-                const randomDuration = Math.min(
-                    60 + Math.random() * 180, // Entre 60 y 240 segundos
-                    audioDuration - randomStart
-                );
-
-                // Configurar el punto de inicio
+                const maxDuration = Math.min((60 + Math.random() * 180) * multiplier, audioDuration - randomStart);
+                
                 audioPlayer.currentTime = randomStart;
-
-                // Reproducir el audio
                 audioPlayer.play();
-
-                // Detener el audio después de la duración aleatoria
+                
                 setTimeout(() => {
                     audioPlayer.pause();
-                }, randomDuration * 1000);
-            }, { once: true }); // Evitar múltiples ejecuciones del evento
+                }, maxDuration * 1000);
+            }, { once: true });
         }
-
-        // Asignar la función al botón
-        playButton.addEventListener('click', playRandomAudio);
     </script>
 </body>
 </html>
